@@ -1,0 +1,387 @@
+1、Node类
+public class Node {
+private int x;
+	private int y;
+	public Node(){
+		
+	}
+	public Node(int x,int y){
+		this.x=x;
+		this.y=y;
+	}
+	public int getX(){
+		return x;
+	}
+	public void setX(int x){
+		this.x=x;
+	}
+	public int getY(){
+		return y;
+	}
+	public void setY(int y){
+		this.y=y;
+	}
+	public String toString(){//方便类型转换
+		//括号里不是String类型通过toString来转换，不然会输出一个地址
+		return"("+x+","+y+")";
+	}
+	@Override  
+	//伪代码可以理解为注释，重写：下面的方法名是否在父类中存在，如果没有
+	//的话会报错。
+	//
+	public int hashCode(){//假设Node是list集合里面，只有把Node节点对象
+		                  //放在set集合时候写hashCode();
+		final  int prime = 31;
+		int result = 1;
+		result=prime*result+x;
+		result=prime*result+y;
+		return result;
+		
+	}
+	@Override
+	//比较Node对象是否在同一坐标都要写上equals方法
+	public boolean equals(Object obj){
+		if(this==obj){
+			return true;
+		}
+		if(this==null){
+			return false;
+		}
+		if(getClass()!=obj.getClass())
+			return false;
+		Node other=(Node)obj;
+		if(x!=other.x){
+			return false;
+		}
+		if(y!=other.y){
+			return false;
+		}
+		return true;
+		
+	}
+	
+}
+2、Worm 类
+import java.util.LinkedList;
+public class Worm {
+	private LinkedList<Node> worm = new LinkedList<Node>();
+	int dir;
+	public static final int UP = -1;
+	public static final int DOWN = 1;
+	public static final int LEFT = -10;
+	public static final int RIGHT = 10;
+	public static final int ROWS = 400;//ROWS行。宽度范围,
+	public static final int COLS = 500;//COLS列。长度范围
+
+	public Worm() {
+		getWorm().add(new Node(90, 90));//第90行90列,蛇扩大10倍
+		getWorm().add(new Node(80, 90));
+		getWorm().add(new Node(70, 90));
+		getWorm().add(new Node(60, 90));
+		getWorm().add(new Node(50, 90));
+		dir = RIGHT;
+	}
+    public void step() {// 走一步
+		Node head=getWorm().get(0);// 找到头节点
+		int x = head.getX() + dir / 10 * 10;//X，Y横坐标与纵坐标
+		int y = head.getY() + dir % 10 * 10;
+		if (x > 0 && x < Worm.COLS && y > 0 && y < Worm.ROWS - 30
+				&& !getWorm().contains(new Node(x, y))) {//!getWorm().contains(new Node(x, y))是否落到蛇身上
+			getWorm().addFirst(new Node(x, y));
+			getWorm().removeLast();//删除
+		} else {
+			dir = 100;
+			throw new RuntimeException("你错了！");
+		}
+	}
+
+	public void step(int dir) {// 控制蛇走的方向
+		this.dir = dir;
+		step();
+	}
+
+	public LinkedList<Node> getLinkedListWorm() {
+		return getWorm();
+	}
+
+	public String toString() {
+		return getWorm().toString();//输出蛇
+	}
+
+	public LinkedList<Node> getWorm() {
+		return worm;
+	}
+
+	public void setWorm(LinkedList<Node> worm) {
+		this.worm = worm;
+	}
+}
+3、WormDemo类
+import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+
+public class WormDemo extends JFrame {//
+	private Wormpanel panel;
+	private static int dir;
+	public WormDemo(){
+		panel=new Wormpanel();//形成蛇的界面
+		add(panel);//将蛇面板放到游戏里面去
+		setTitle("贪吃蛇");//题目
+		setSize(500+15,400+35);//大小
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);//关闭窗口就是关闭程序
+		setCursor(new Cursor(12));//定义鼠标属性
+		setVisible(true);//可视化为true
+		panel.requestFocus();//面板后区信息焦点
+		setLocationRelativeTo(null);//设置窗口组建定义的位置
+		this.setResizable(false);
+	}
+
+	
+
+	public static void main(String[] args){
+		final WormDemo wd=new WormDemo();//new一个自己创建的一个属性游戏窗口
+		//设置一个监听
+		JMenuBar jmb=new JMenuBar();//导包，然后设置
+		wd.setJMenuBar(jmb);//往自己new的窗口加上监听
+		JMenu fm=new JMenu("选项");
+		jmb.add(fm);
+		JMenuItem mi=new JMenuItem("重新再来");//
+		mi.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				wd.panel.setWorm(new Worm());
+				wd.panel.setN(10);
+				wd.panel.setFoods(wd.panel.initFoods(wd.panel.n));
+				wd.panel.setT(1000);
+				wd.panel.repaint();//重新画
+				wd.repaint();
+			}
+			
+		});
+		fm.add(mi);
+		JMenuItem mi2=new JMenuItem("暂停");
+		mi2.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				dir=wd.panel.getWorm().dir;
+				wd.panel.getWorm().dir=-100;
+			}
+		});
+		fm.add(mi2);
+		JMenuItem mi3=new JMenuItem("开始");
+		mi3.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				//dir=wd.panel.getWorm().dir;
+				wd.panel.getWorm().dir=dir;
+			}
+		});
+		fm.add(mi3);
+		
+		
+	}
+
+}
+4、 Wormpanel 类
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.Set;
+
+import javax.imageio.ImageIO;
+import javax.swing.JPanel;
+//JPanel
+public class Wormpanel extends JPanel{//蛇的面板上有蛇，食物
+    private static final String TOOL_TIP_TEXT_KEY_ERROR = null;
+	private Worm worm;
+    private MoveListener listener=new MoveListener();//监听器
+    private Set<Node> foods=new HashSet<Node>();//设置食物
+    public int n=10;//个数
+    public int t=1000;//时间
+    public int getN(){
+    	return n;
+    }
+    public void setN(int n){
+    	this.n=n;
+    }
+    public int getT(){
+    	return t;
+    }
+    public void setT(int t){
+    	this.t=t;
+    }
+    public void setFoods(Set<Node>foods){
+    	this.foods=foods;
+    }
+    private Service se =new Service();
+    public Wormpanel(){
+    	setWorm(new Worm());//生成一条蛇
+    	foods=initFoods(n);//生成食物
+    	addKeyListener(listener);//加上监听器，监听键盘
+    	se.start();//启动线程
+    }
+	public Set<Node> initFoods(int n) {
+		Set<Node>foods=new HashSet<Node>();//食物也是
+		Random random=new Random();
+		for(;;){
+			int x=random.nextInt(480)/10*10+10;
+			int y=random.nextInt(360)%10*10+10;
+			if(getWorm().getLinkedListWorm().contains(new Node(x,y))){//检查食物是否在蛇上
+			continue;
+		}
+		foods.add(new Node(x,y));
+		if(foods.size()==n){
+			break;
+		}
+	
+		}return foods;
+	}
+	//加入背景图片
+	public static BufferedImage image;
+	public static BufferedImage getImage() {
+		return image;
+	}
+	public static void setImage(BufferedImage image){
+		Wormpanel.image=image;
+	}
+	//制作面板，形成面板的形式
+	public void paint(Graphics g){
+		super.paint(g);
+		this.requestFocus();//设置接收信息
+		//this.setBackground(Color.blue);//背景色
+		try{
+			g.drawImage(ImageIO.read(Wormpanel.class.getResource("yy.jpg")), 0, 0, null);
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+		g.setColor(Color.gray);//画笔色
+
+		g.fill3DRect(0, 0, 502, 10, false);
+		g.fill3DRect(500, 0, 11, 385, false);
+		g.fill3DRect(0, 375, 520, 10, false);
+		g.fill3DRect(0, 0, 10, 502, false);
+
+
+		for(int i=0;i<getWorm().getLinkedListWorm().size();i++){//画虫
+			g.setColor(Color.cyan);//蓝绿色
+			g.fill3DRect(getWorm().getLinkedListWorm().get(i).getX(),
+					getWorm().getLinkedListWorm().get(i).getY(),10,10,false);//虫子的一节
+		}
+		if(foods.size()==0){
+			foods=initFoods(++n);
+			t=t-200;
+		}
+		Iterator<Node>food=foods.iterator();
+		g.setColor(Color.GREEN);
+		while(food.hasNext()){
+			Node f=food.next();
+			g.fill3DRect(f.getX(), f.getY(), 10, 10, false);
+			}
+		
+	}
+	//画结束界面
+	public void paintEnd(Graphics g){
+		g.setColor(Color.red);//设置画笔颜色
+		g.setFont(new Font(TOOL_TIP_TEXT_KEY,ERROR,30));
+		g.clearRect(0, 150, 550, 100);
+		g.setColor(Color.black);
+		g.fill3DRect(0, 150, 550, 100, false);
+		g.clearRect(150, 180, 200, 40);
+		g.setColor(Color.red);
+		g.drawString("you die！",150,200);
+		Service.interrupted();//跳出线程
+	}
+	
+	public Worm getWorm() {
+		return worm;
+	}
+	public void setWorm(Worm worm) {
+		this.worm = worm;
+	}
+	class MoveListener extends KeyAdapter{
+		int dir;//设置键盘监听器
+	
+		public void keyPressed(KeyEvent e){
+			System.out.println("您按下的是："+e.getKeyChar());
+			switch(e.getKeyCode()){
+			case KeyEvent.VK_UP:
+				dir=Worm.UP;
+				break;
+			case KeyEvent.VK_DOWN:
+				dir=Worm.DOWN;
+				break;
+			case KeyEvent.VK_LEFT:
+				dir=Worm.LEFT;
+				break;
+			case KeyEvent.VK_RIGHT:
+				dir=Worm.RIGHT;
+				break;
+			}
+			System.out.println(getWorm());
+	System.out.println("dir="+dir+",worm.dir="+getWorm());
+			step(dir,getWorm());
+		}
+
+		
+	}
+    class Service extends Thread{
+    	public void run(){
+    		try{
+    			for(;;){
+    				Thread.sleep(t);
+    				step(getWorm().dir,getWorm());
+    			}
+    				}catch (Exception e){
+    					e.printStackTrace();
+    				}
+    		}
+    	}
+    public void step(int dir,Worm worm){
+    	if(dir+worm.dir==0){
+    		paintEnd(Wormpanel.this.getGraphics());
+    		worm.dir=100;
+    		return;
+    		}
+    	else{
+    		if(worm.dir==100){
+    			paintEnd(Wormpanel.this.getGraphics());
+    			return;
+    		}
+    		if(worm.dir==-100){
+    			return;
+    		}
+    		Node head=worm.getLinkedListWorm().get(0);
+    		int x=head.getX()+dir/10*10;
+    		int y=head.getY()+dir%10*10;
+    		Node n=new Node(x,y);
+    		if(foods.contains(n)&&!worm.getLinkedListWorm().contains(n)){
+    			foods.remove(n);
+    			worm.getLinkedListWorm().addFirst(n);
+    			worm.dir=dir;
+    			
+    		}else{
+    			try{
+    				worm.step(dir);
+    				
+    			}catch (Exception e) {
+
+
+    				paintEnd(Wormpanel.this.getGraphics());
+    				return;
+    			}
+    		}
+
+
+    	}Wormpanel.this.repaint();
+    }
+    }
